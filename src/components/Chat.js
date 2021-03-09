@@ -1,5 +1,5 @@
+import React, {useRef, useEffect} from 'react';
 import styled from "styled-components";
-import React from 'react';
 import StarBorderOutlinedIcon from "@material-ui/icons/StarBorderOutlined";
 import InfoOutlinedIcon from "@material-ui/icons/InfoOutlined";
 import { useSelector } from "react-redux";
@@ -11,59 +11,72 @@ import Message from "./Message";
 
 
 function Chat() {
+    const chatRef = useRef(null);
     const roomId =useSelector(selectRoomId);
     const [roomDetails] = useDocument(
         roomId && db.collection('rooms').doc(roomId)
-    )
-    const [roomMessages] = useCollection(roomId &&
+    );
+    const [roomMessages,loading] = useCollection(roomId &&
         db
         .collection("rooms")
         .doc(roomId)
         .collection("messages")
         .orderBy("timestamp", "asc")
     );
+
+    useEffect(() => {
+        chatRef?.current?.scrollIntoView({
+            behavior: "smooth",
+        });
+    },[roomId, loading]);
+
     return (
         <ChatContainer>
-            <>
-           <Header>
-               <HeaderLeft>
-                   <h4>
-                       <strong>
+            {roomDetails && roomMessages &&(
+                <>
+                  <Header>
+                     <HeaderLeft>
+                         <h4>
+                         <strong>
                            #{roomDetails?.data().name}
-                       </strong>
-                   </h4>
-                   <StarBorderOutlinedIcon />
-               </HeaderLeft>
-               <HeaderRight>
-                   <p>
-                       <InfoOutlinedIcon /> Details
-                    </p>
-               </HeaderRight>
-           </Header>
-           <ChatMessages>
-               {roomMessages?.docs.map(doc => {
-                   const{message, timestamp,user,userImage} = doc.data();
+                         </strong>
+                         </h4>
+                         <StarBorderOutlinedIcon />
+                     </HeaderLeft>
+                     <HeaderRight>
+                      <p>
+                        <InfoOutlinedIcon /> Details
+                      </p>
+                     </HeaderRight>
+                   </Header>
+                  <ChatMessages>
+                      {roomMessages?.docs.map(doc => {
+                      const{message, timestamp,user,userImage} = doc.data();
 
-                   return(
-                       <message
-                         key ={doc.id}
-                         message ={message}
-                         timestamp={timestamp}
-                         user = {user}
-                         userImage = {userImage}
-                   />
-                   );
+                       return(
+                          <Message
+                             key ={doc.id}
+                             message ={message}
+                             timestamp={timestamp}
+                             user = {user}
+                             userImage = {userImage}
+                           />
+                       );
             
-               })}
+                   })}
 
-               <ChatBottom />
+                   <ChatBottom ref={chatRef}/>
 
-           </ChatMessages>
-           <ChatInput
-            channelName = {roomDetails?.data().name}
-            channelId ={roomId}
-           />
-           </>
+                    </ChatMessages>
+                    <ChatInput
+                       chatRef ={chatRef}
+                       channelName = {roomDetails?.data().name}
+                       channelId ={roomId}
+                     />
+                </>
+
+            )}
+            
 
         </ChatContainer>
     );
@@ -84,19 +97,23 @@ justify-content:space-between;
 padding:20px;
 border-bottom: 1px solid lightgray;
 `;
+
 const HeaderLeft = styled.div`
 display:flex;
 align-items: center;
+
 >h4{
     display:flex;
     text-transform:lowercase;
+    margin-right:10px;
 
 }
->h4 >.MuiSVGIcon-root{
-    margin-left: 10px;
+>h4 >.MuiSvgIcon-root{
+    margin-left: 20px;
     font-size: 18px;
 }
 `;
+
 const HeaderRight = styled.div`
 
 >p{
@@ -105,7 +122,7 @@ const HeaderRight = styled.div`
     font-size:14px;
 
 }
->p >.MuiSVGIcon-root{
+>p >.MuiSvgIcon-root{
     margin-right:5px;
     font-size:16px;
 }

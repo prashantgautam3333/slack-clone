@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from "styled-components";
-import  FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import CreateIcon from "@material-ui/icons/Create";
 import InsertCommentIcon from "@material-ui/icons/InsertComment";
 import InboxIcon from "@material-ui/icons/Inbox";
@@ -13,20 +13,21 @@ import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import SidebarOption from './SidebarOption';
 import AddIcon from "@material-ui/icons/Add";
-
 import {useCollection} from "react-firebase-hooks/firestore";
-import {db} from "../firebase";
+import {db,auth} from "../firebase";
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 function SideBar() {
-    const [channels,loading,error] = useCollection(db.collection("rooms"));
+    const [channels] = useCollection(db.collection("rooms"));
+    const[user] = useAuthState(auth);
     return (
         <SideBarContainer>
             <SidebarHeader>
                 <SidebarInfo>
-                    <h2>PNG</h2>
+                    <h2>The Himalayan Club</h2>
                     <h3>
                         <FiberManualRecordIcon />
-                          Prashant Gautam
+                          {user.displayName}
                     </h3>   
                 </SidebarInfo>
                 <CreateIcon />
@@ -44,7 +45,7 @@ function SideBar() {
             <SidebarOption Icon = {ExpandMoreIcon} title=" Channels" />
             <hr/>
             <SidebarOption Icon = {AddIcon} addChannelOption title="Add Channel" />
-            {channels?.docs.map(doc=>(
+            {channels?.docs.map((doc)=>(
                 <SidebarOption
                  key ={doc.id}
                  id={doc.id} 
@@ -52,7 +53,7 @@ function SideBar() {
             ))}
   
         </SideBarContainer>
-    )
+    );
 }
 
 
